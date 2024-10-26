@@ -3,8 +3,19 @@ const Product = require("../models/product.model");
 
 const getProducts = async (req, res) => {
     try {
-        const products = await Product.find();
-        res.send(products);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const products = await Product.find().skip(skip).limit(limit);
+        const total = await Product.countDocuments();
+
+        res.send({
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+            products
+        });
     } catch (error) {
         res.status(500).send({ message: error.message });
     }
